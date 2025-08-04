@@ -1,0 +1,164 @@
+[package]
+name = "space-simulation-engine"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "A high-performance space resource management simulation engine tutorial project"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yourusername/space-simulation-engine"
+keywords = ["simulation", "space", "game", "tutorial", "engine"]
+categories = ["simulation", "games"]
+
+[lib]
+name = "space_sim"
+path = "src/lib.rs"
+
+[[bin]]
+name = "simulation"
+path = "src/main.rs"
+
+[dependencies]
+# Core async runtime and utilities
+tokio = { version = "1.0", features = ["full"] }
+futures = "0.3"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+serde-xml-rs = "0.6"
+
+# Networking and messaging
+zmq = "0.10"
+prost = "0.12"
+prost-types = "0.12"
+bytes = "1.5"
+
+# Math and spatial operations
+nalgebra = "0.32"
+parry3d = "0.13"
+rand = "0.8"
+rand_distr = "0.4"
+
+# Performance and data structures
+rayon = "1.8"
+crossbeam = "0.8"
+dashmap = "5.5"
+smallvec = "1.11"
+ahash = "0.8"
+
+# ECS and behavior trees
+hecs = "0.10"
+big-brain = "0.20"
+
+# Configuration and logging
+config = "0.14"
+log = "0.4"
+env_logger = "0.10"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+# Python FFI
+pyo3 = { version = "0.20", features = ["auto-initialize"] }
+
+# Testing and benchmarking
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.4"
+
+# WASM support for plugins
+wasmtime = "15.0"
+wasmi = "0.32"
+
+# Compression
+lz4_flex = "0.11"
+zstd = "0.13"
+
+# Time and scheduling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Memory management
+bumpalo = "3.14"
+
+[build-dependencies]
+prost-build = "0.12"
+
+[dev-dependencies]
+tokio-test = "0.4"
+approx = "0.5"
+mockall = "0.12"
+
+[features]
+default = ["networking", "python-scripting", "wasm-plugins"]
+networking = ["zmq", "prost"]
+python-scripting = ["pyo3"]
+wasm-plugins = ["wasmtime", "wasmi"]
+simd = []
+profiling = ["tracing/max_level_trace"]
+
+[profile.dev]
+opt-level = 0
+debug = true
+overflow-checks = true
+
+[profile.release]
+opt-level = 3
+debug = false
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.bench]
+inherits = "release"
+debug = true
+
+[profile.test]
+opt-level = 1
+
+# Workspace configuration for tutorial modules
+[workspace]
+members = [
+    "tutorials/tut01",
+    "tutorials/tut02",
+    "tutorials/tut03",
+    "tutorials/tut04",
+    "tutorials/tut05",
+    "tutorials/tut06",
+    "tutorials/tut07",
+    "tutorials/tut08",
+    "tutorials/tut09",
+    "tutorials/tut10",
+    "tutorials/tut11",
+    "tutorials/tut12",
+    "tutorials/tut13",
+    "tutorials/tut14",
+    "tutorials/tut15",
+    "tutorials/tut16",
+    "tutorials/tut17",
+    "tutorials/tut18",
+    "tutorials/tut19",
+    "tutorials/tut20",
+    "tutorials/tut21",
+    "tutorials/tut22",
+    "tutorials/tut23",
+]
+
+[[bench]]
+name = "simulation_performance"
+harness = false
+
+[[bench]]
+name = "resource_management"
+harness = false
+
+[[bench]]
+name = "network_compression"
+harness = false
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
