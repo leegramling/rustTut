@@ -1,5 +1,43 @@
 # Rust Tutorial: Space Resource Management Simulation Engine
 
+## Tutorial Structure Requirements
+
+Each tutorial should include the following components:
+
+### 1. Learning Objectives
+- Clear, measurable goals for what students will learn
+- Specific skills and concepts covered
+- Prerequisites and expected outcomes
+
+### 2. Lesson Section
+- Comprehensive explanation of the Rust concept
+- Theoretical foundation and background
+- Why the concept matters and when to use it
+- Rust-specific advantages and considerations
+- Core principles and patterns
+- Examples of basic usage patterns
+
+### 3. Practical Examples
+- Space simulation implementations
+- Real-world applicable code samples
+- Progressive complexity from basic to advanced
+- Complete, runnable examples
+- Integration with the broader simulation engine
+
+### 4. Key Takeaways
+- Summary of important points
+- Main concepts to remember
+- Critical insights and patterns
+- Performance considerations
+- Common pitfalls to avoid
+
+### 5. Best Practices
+- Guidelines for effective use
+- Code organization recommendations
+- Performance optimization tips
+- Error handling strategies
+- Testing and debugging approaches
+
 ## Always
 - [ ] Git add and commit after each completed task
 - [ ] update todo.md after each task
