@@ -2,12 +2,14 @@
 
 ## Always
 - [ ] Git add and commit after each completed task
+- [ ] update todo.md after each task
 - [ ] Write unit tests for all new functionality
 - [ ] Update documentation as features are added
 - [ ] Profile performance critical sections
 
 ## High Priority - Foundation
 - [ ] think ultra hard and create a designSim.md which explains how a Space resource managment simultation engine might be created to take advantage of rusts features.
+- [ ] write tutorial00.md which explains enums, structs, traits, methods, and how to create class like objects for dev coming from c++20, detail how to use enums with options and how to use generics and dyn traits in place of multiple inheritance. Show examples from our space game.
 
 ### Phase 1: Core Rust Concepts
 - [ ] **Tutorial 01**: Rust Design Patterns
