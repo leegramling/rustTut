@@ -56,9 +56,12 @@
   - [ ] Create `tut08_complete.rs` - Complete tested simulation core
 
 - [ ] **Tutorial 09**: Behavior Trees and State Machines
-  - [ ] Create `tutorial09.md` - Behavior graph implementation
-  - [ ] Create `tut09.rs` - Ship AI behavior system
+  - [ ] Create `tutorial09.md` - Behavior graph implementation with Rhai scripting
+  - [ ] Create `tut09.rs` - Ship AI behavior system using YAML configuration
   - [ ] Create `tut09_complete.rs` - Complete behavior tree system
+  - [x] Create `behavior_example.yaml` - Example behavior graph configuration
+  - [ ] Integrate Rhai scripting engine for behavior logic
+  - [ ] Use YAML to describe behavior graphs and decision trees
 
 - [ ] **Tutorial 10**: Spatial Systems
   - [ ] Create `tutorial10.md` - Quadtrees, spatial hashing, pathfinding
@@ -143,11 +146,14 @@
   - [ ] Create user documentation and API reference
 
 ### Supporting Infrastructure
-- [ ] Create `Cargo.toml` with all necessary dependencies
+- [x] Create `Cargo.toml` with all necessary dependencies
 - [ ] Set up testing framework and benchmarking suite
 - [ ] Create example configuration files (YAML, JSON, XML)
 - [ ] Set up logging and debugging infrastructure
 - [ ] Create performance profiling setup
+- [ ] Add Rhai scripting engine integration for behavior trees
+- [ ] Create YAML-based behavior graph configuration system
+- [ ] Design behavior_example.yaml as reference implementation
 
 ## Done
 (Completed tasks will be moved here)

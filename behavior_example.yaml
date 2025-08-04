@@ -1,0 +1,472 @@
+# ship_docking_behavior.yaml
+behavior_name: "merchant_ship_docking"
+description: "Complete docking, trading, and resupply sequence for merchant vessels"
+
+# Global configuration
+globals:
+  max_docking_attempts: 3
+  base_docking_time: 300.0      # 5 minutes
+  unload_time_per_ton: 2.0      # 2 seconds per ton
+  load_time_per_item: 1.5       # 1.5 seconds per supply item
+  crew_boarding_time: 30.0      # 30 seconds per crew member
+  payment_processing_time: 60.0 # 1 minute for financial transactions
+
+# Behavior tree definition
+root_behavior:
+  type: sequence
+  name: "complete_docking_sequence"
+  children:
+    
+    # Phase 1: Approach and Request Docking
+    - type: sequence
+      name: "docking_approach"
+      children:
+        - type: action
+          name: "request_docking_permission"
+          script: |
+            // Check if port is available and we have docking clearance
+            fn request_docking_permission() {
+              ship.status = "requesting_docking";
+              
+              let port_info = request_port_access(ship.current_port);
+              
+              if port_info.available_berths > 0 {
+                ship.assigned_berth = port_info.assign_berth(ship.id);
+                ship.docking_fee = calculate_docking_fee(ship.tonnage, ship.cargo_value);
+                
+                log(`Docking permission granted. Berth: ${ship.assigned_berth}, Fee: ${ship.docking_fee}`);
+                return "success";
+              } else {
+                ship.wait_time = port_info.estimated_wait_time;
+                log(`No berths available. Estimated wait: ${ship.wait_time} minutes`);
+                return "failure";
+              }
+            }
+        
+        - type: action
+          name: "navigate_to_berth"
+          script: |
+            fn navigate_to_berth() {
+              ship.status = "approaching_berth";
+              
+              let berth_position = get_berth_position(ship.assigned_berth);
+              let distance = calculate_distance(ship.position, berth_position);
+              
+              if distance > 2.0 {
+                // Still approaching
+                move_ship_towards(ship, berth_position, ship.docking_speed);
+                return "running";
+              } else {
+                // Arrived at berth
+                ship.position = berth_position;
+                ship.status = "docked";
+                start_timer("docking_operations", globals.base_docking_time);
+                log(`Ship docked at berth ${ship.assigned_berth}`);
+                return "success";
+              }
+            }
+
+    # Phase 2: Parallel Operations (Unloading and Loading)
+    - type: parallel
+      name: "cargo_operations"
+      success_policy: "all"  # All children must succeed
+      children:
+        
+        # Unload raw materials
+        - type: sequence
+          name: "unload_raw_materials"
+          children:
+            - type: condition
+              name: "has_raw_materials"
+              script: |
+                fn has_raw_materials() {
+                  return ship.cargo.raw_materials.len() > 0;
+                }
+            
+            - type: action
+              name: "negotiate_material_prices"
+              script: |
+                fn negotiate_material_prices() {
+                  ship.status = "negotiating_sale";
+                  
+                  let total_value = 0;
+                  let sale_contracts = #{};
+                  
+                  for material_type in ship.cargo.raw_materials.keys() {
+                    let quantity = ship.cargo.raw_materials[material_type];
+                    let market_price = get_market_price(ship.current_port, material_type);
+                    
+                    // Apply reputation and quantity bonuses
+                    let final_price = market_price * get_reputation_multiplier(ship.reputation);
+                    if quantity > 100 {
+                      final_price *= 1.1; // Bulk bonus
+                    }
+                    
+                    sale_contracts[material_type] = #{
+                      quantity: quantity,
+                      unit_price: final_price,
+                      total_value: quantity * final_price
+                    };
+                    
+                    total_value += sale_contracts[material_type].total_value;
+                  }
+                  
+                  ship.pending_sales = sale_contracts;
+                  ship.expected_income = total_value;
+                  
+                  log(`Material sale negotiated. Expected income: ${total_value} credits`);
+                  return "success";
+                }
+            
+            - type: action
+              name: "unload_materials"
+              script: |
+                fn unload_materials() {
+                  if !has_timer("unload_timer") {
+                    let total_tons = 0;
+                    for material_type in ship.cargo.raw_materials.keys() {
+                      total_tons += ship.cargo.raw_materials[material_type];
+                    }
+                    
+                    let unload_duration = total_tons * globals.unload_time_per_ton;
+                    start_timer("unload_timer", unload_duration);
+                    ship.status = "unloading_materials";
+                    
+                    log(`Starting unload of ${total_tons} tons. Duration: ${unload_duration}s`);
+                    return "running";
+                  }
+                  
+                  if is_timer_finished("unload_timer") {
+                    // Transfer materials to port
+                    for material_type in ship.cargo.raw_materials.keys() {
+                      let quantity = ship.cargo.raw_materials[material_type];
+                      transfer_to_port(ship.current_port, material_type, quantity);
+                    }
+                    
+                    ship.cargo.raw_materials.clear();
+                    ship.cargo_weight -= calculate_materials_weight();
+                    
+                    log("Raw materials unloaded successfully");
+                    return "success";
+                  }
+                  
+                  return "running";
+                }
+        
+        # Load supplies and crew
+        - type: sequence
+          name: "load_supplies_and_crew"
+          children:
+            - type: action
+              name: "order_supplies"
+              script: |
+                fn order_supplies() {
+                  ship.status = "ordering_supplies";
+                  
+                  let supply_list = calculate_needed_supplies(ship);
+                  let total_cost = 0;
+                  
+                  ship.supply_orders = #{};
+                  
+                  // Essential supplies
+                  for supply_type in ["fuel", "food", "water", "spare_parts"] {
+                    let needed = supply_list[supply_type];
+                    let available = check_port_inventory(ship.current_port, supply_type);
+                    let to_order = needed.min(available);
+                    
+                    if to_order > 0 {
+                      let unit_cost = get_supply_price(ship.current_port, supply_type);
+                      ship.supply_orders[supply_type] = #{
+                        quantity: to_order,
+                        unit_price: unit_cost,
+                        total_cost: to_order * unit_cost
+                      };
+                      total_cost += ship.supply_orders[supply_type].total_cost;
+                    }
+                  }
+                  
+                  ship.supply_cost = total_cost;
+                  
+                  if total_cost <= ship.credits {
+                    log(`Supplies ordered. Total cost: ${total_cost} credits`);
+                    return "success";
+                  } else {
+                    log(`Insufficient funds for supplies. Need: ${total_cost}, Have: ${ship.credits}`);
+                    return "failure";
+                  }
+                }
+            
+            - type: action
+              name: "recruit_crew"
+              script: |
+                fn recruit_crew() {
+                  ship.status = "recruiting_crew";
+                  
+                  let crew_needed = ship.max_crew - ship.current_crew.len();
+                  if crew_needed <= 0 {
+                    log("No crew recruitment needed");
+                    return "success";
+                  }
+                  
+                  let available_crew = get_available_crew(ship.current_port);
+                  let to_recruit = crew_needed.min(available_crew.len());
+                  
+                  ship.crew_recruitment = #{
+                    positions_available: crew_needed,
+                    candidates: available_crew.slice(0, to_recruit),
+                    recruitment_cost: to_recruit * get_crew_hiring_cost()
+                  };
+                  
+                  log(`Recruiting ${to_recruit} crew members. Cost: ${ship.crew_recruitment.recruitment_cost}`);
+                  return "success";
+                }
+            
+            - type: action
+              name: "load_supplies"
+              script: |
+                fn load_supplies() {
+                  if !has_timer("load_timer") {
+                    let total_items = 0;
+                    for supply_type in ship.supply_orders.keys() {
+                      total_items += ship.supply_orders[supply_type].quantity;
+                    }
+                    
+                    let load_duration = total_items * globals.load_time_per_item;
+                    start_timer("load_timer", load_duration);
+                    ship.status = "loading_supplies";
+                    
+                    log(`Loading ${total_items} supply items. Duration: ${load_duration}s`);
+                    return "running";
+                  }
+                  
+                  if is_timer_finished("load_timer") {
+                    // Transfer supplies to ship
+                    for supply_type in ship.supply_orders.keys() {
+                      let order = ship.supply_orders[supply_type];
+                      ship.supplies[supply_type] = (ship.supplies[supply_type] ?? 0) + order.quantity;
+                      ship.cargo_weight += calculate_supply_weight(supply_type, order.quantity);
+                    }
+                    
+                    log("Supplies loaded successfully");
+                    return "success";
+                  }
+                  
+                  return "running";
+                }
+            
+            - type: action
+              name: "board_crew"
+              script: |
+                fn board_crew() {
+                  if !has_timer("boarding_timer") {
+                    let crew_count = ship.crew_recruitment.candidates.len();
+                    let boarding_duration = crew_count * globals.crew_boarding_time;
+                    start_timer("boarding_timer", boarding_duration);
+                    ship.status = "boarding_crew";
+                    
+                    log(`${crew_count} crew members boarding. Duration: ${boarding_duration}s`);
+                    return "running";
+                  }
+                  
+                  if is_timer_finished("boarding_timer") {
+                    // Add crew to ship
+                    for candidate in ship.crew_recruitment.candidates {
+                      ship.current_crew.push(candidate);
+                      candidate.status = "aboard";
+                      candidate.ship_assignment = ship.id;
+                    }
+                    
+                    log(`${ship.crew_recruitment.candidates.len()} crew members boarded`);
+                    return "success";
+                  }
+                  
+                  return "running";
+                }
+
+    # Phase 3: Financial Transactions
+    - type: sequence
+      name: "financial_transactions"
+      children:
+        - type: action
+          name: "process_payments"
+          script: |
+            fn process_payments() {
+              if !has_timer("payment_timer") {
+                start_timer("payment_timer", globals.payment_processing_time);
+                ship.status = "processing_payments";
+                log("Processing financial transactions...");
+                return "running";
+              }
+              
+              if is_timer_finished("payment_timer") {
+                // Receive payment for materials
+                let income = ship.expected_income ?? 0;
+                ship.credits += income;
+                
+                // Pay for supplies
+                let supply_cost = ship.supply_cost ?? 0;
+                ship.credits -= supply_cost;
+                
+                // Pay crew recruitment costs
+                let crew_cost = ship.crew_recruitment.recruitment_cost ?? 0;
+                ship.credits -= crew_cost;
+                
+                // Pay docking fees
+                ship.credits -= ship.docking_fee;
+                
+                // Update reputation based on successful trade
+                ship.reputation += 0.1;
+                
+                let net_profit = income - supply_cost - crew_cost - ship.docking_fee;
+                
+                ship.last_trade_summary = #{
+                  port: ship.current_port,
+                  income: income,
+                  expenses: supply_cost + crew_cost + ship.docking_fee,
+                  net_profit: net_profit,
+                  new_balance: ship.credits
+                };
+                
+                log(`Trade completed. Net profit: ${net_profit} credits. New balance: ${ship.credits}`);
+                return "success";
+              }
+              
+              return "running";
+            }
+
+    # Phase 4: Departure Preparation
+    - type: sequence
+      name: "departure_preparation"
+      children:
+        - type: action
+          name: "update_ship_manifest"
+          script: |
+            fn update_ship_manifest() {
+              ship.status = "updating_manifest";
+              
+              // Update cargo manifest
+              ship.manifest = #{
+                crew_count: ship.current_crew.len(),
+                cargo_weight: ship.cargo_weight,
+                supplies: ship.supplies,
+                departure_port: ship.current_port,
+                departure_time: get_current_time()
+              };
+              
+              // Log manifest
+              log(`Ship manifest updated:`);
+              log(`  Crew: ${ship.manifest.crew_count}/${ship.max_crew}`);
+              log(`  Cargo weight: ${ship.manifest.cargo_weight}/${ship.max_cargo_weight} tons`);
+              log(`  Fuel: ${ship.supplies.fuel ?? 0} units`);
+              
+              return "success";
+            }
+        
+        - type: condition
+          name: "ready_for_departure"
+          script: |
+            fn ready_for_departure() {
+              // Check if ship is ready to depart
+              let has_minimum_crew = ship.current_crew.len() >= ship.min_crew;
+              let has_fuel = (ship.supplies.fuel ?? 0) > ship.min_fuel_for_departure;
+              let has_food = (ship.supplies.food ?? 0) > ship.min_food_for_journey;
+              let not_overweight = ship.cargo_weight <= ship.max_cargo_weight;
+              
+              if !has_minimum_crew {
+                log("Not ready: Insufficient crew");
+                return false;
+              }
+              if !has_fuel {
+                log("Not ready: Insufficient fuel");
+                return false;
+              }
+              if !has_food {
+                log("Not ready: Insufficient food");
+                return false;
+              }
+              if !not_overweight {
+                log("Not ready: Ship overweight");
+                return false;
+              }
+              
+              log("Ship ready for departure");
+              return true;
+            }
+        
+        - type: action
+          name: "request_departure_clearance"
+          script: |
+            fn request_departure_clearance() {
+              ship.status = "requesting_departure";
+              
+              let clearance = request_departure_clearance(ship.current_port, ship.id);
+              
+              if clearance.approved {
+                ship.departure_clearance = clearance;
+                ship.status = "cleared_for_departure";
+                
+                // Release berth
+                release_berth(ship.current_port, ship.assigned_berth);
+                
+                log(`Departure clearance granted. Clear to leave on heading ${clearance.departure_heading}`);
+                return "success";
+              } else {
+                log(`Departure delayed: ${clearance.reason}`);
+                return "failure";
+              }
+            }
+
+# Error handling and fallback behaviors
+fallback_behaviors:
+  docking_failed:
+    type: sequence
+    children:
+      - type: action
+        name: "find_alternative_port"
+        script: |
+          fn find_alternative_port() {
+            let nearby_ports = find_ports_in_range(ship.position, ship.max_range);
+            
+            for port in nearby_ports {
+              if port.id != ship.current_port && port.accepts_merchant_ships {
+                ship.target_port = port.id;
+                log(`Redirecting to alternative port: ${port.name}`);
+                return "success";
+              }
+            }
+            
+            log("No alternative ports available");
+            return "failure";
+          }
+      
+      - type: action
+        name: "emergency_anchor"
+        script: |
+          fn emergency_anchor() {
+            ship.status = "anchored";
+            ship.position = find_safe_anchorage(ship.position);
+            ship.wait_time = 3600; // Wait 1 hour
+            
+            log("Ship anchored, waiting for port availability");
+            return "success";
+          }
+
+  insufficient_funds:
+    type: action
+    name: "emergency_credit_request"
+    script: |
+      fn emergency_credit_request() {
+        let credit_line = request_emergency_credit(ship.company_id, ship.needed_amount);
+        
+        if credit_line.approved {
+          ship.credits += credit_line.amount;
+          ship.debt += credit_line.amount;
+          ship.debt_interest_rate = credit_line.interest_rate;
+          
+          log(`Emergency credit approved: ${credit_line.amount} credits`);
+          return "success";
+        } else {
+          log("Emergency credit denied");
+          return "failure";
+        }
+      }
