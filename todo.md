@@ -7,6 +7,7 @@
 - [ ] Profile performance critical sections
 
 ## High Priority - Foundation
+- [ ] think ultra hard and create a designSim.md which explains how a Space resource managment simultation engine might be created to take advantage of rusts features.
 
 ### Phase 1: Core Rust Concepts
 - [ ] **Tutorial 01**: Rust Design Patterns
