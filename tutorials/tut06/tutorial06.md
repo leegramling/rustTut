@@ -9,6 +9,193 @@
 - Understand memory layout optimization techniques
 - Create data structures that leverage CPU architecture
 
+## Lesson: Data-Oriented Programming
+
+### What is Data-Oriented Programming?
+
+Data-Oriented Programming is a programming paradigm that focuses on organizing code around the data and how it flows through the system, rather than around objects and their methods. The key principle is:
+
+**"Transform data efficiently, not hide data behind abstractions"**
+
+### Core Principles
+
+#### 1. Data Layout Matters
+- **Cache locality**: Keep related data close in memory
+- **Structure of Arrays (SoA)**: Separate different data types
+- **Array of Structures (AoS)**: Group related data together
+- **Memory alignment**: Align data to processor word boundaries
+
+#### 2. Batch Processing
+- **SIMD (Single Instruction, Multiple Data)**: Process multiple data points simultaneously
+- **Vectorization**: Use CPU vector instructions
+- **Loop optimization**: Minimize branches and memory access patterns
+
+#### 3. Separate Data from Behavior
+- **Data is data**: Pure data structures without methods
+- **Systems process data**: Functions operate on data collections
+- **Composition over inheritance**: Combine simple data types
+
+### Why Data-Oriented Programming?
+
+#### Performance Benefits:
+1. **Cache efficiency**: Better memory access patterns
+2. **Parallelization**: Easier to parallelize data processing
+3. **SIMD utilization**: Vectorized operations on homogeneous data
+4. **Predictable performance**: Less pointer chasing and virtual calls
+
+#### Design Benefits:
+1. **Separation of concerns**: Data and behavior are separate
+2. **Testability**: Pure functions are easier to test
+3. **Scalability**: Easier to distribute data processing
+4. **Flexibility**: Recombine data in different ways
+
+### Memory Hierarchy and Performance
+
+#### CPU Cache Hierarchy:
+```
+CPU Registers  ~1 cycle    32-64 bytes
+L1 Cache       ~4 cycles   32-64 KB
+L2 Cache       ~10 cycles  256 KB - 1 MB
+L3 Cache       ~40 cycles  8-32 MB
+Main Memory    ~200 cycles Several GB
+Disk Storage   ~10M cycles Terabytes
+```
+
+#### Cache Line Impact:
+- **Cache line size**: Typically 64 bytes
+- **False sharing**: Multiple threads accessing different data in same cache line
+- **Spatial locality**: Accessing nearby memory addresses
+- **Temporal locality**: Accessing same memory repeatedly
+
+### Entity-Component-System (ECS) Pattern
+
+ECS is a specific application of data-oriented principles:
+
+#### Traditional OOP Approach:
+```rust
+// Object-oriented approach
+struct Ship {
+    position: Vector3,
+    velocity: Vector3,
+    health: f32,
+    // ... many other fields
+}
+
+impl Ship {
+    fn update(&mut self, dt: f32) {
+        self.position += self.velocity * dt;
+        // Process all aspects of the ship
+    }
+}
+```
+
+#### ECS Approach:
+```rust
+// Data-oriented ECS approach
+struct Position(Vector3);
+struct Velocity(Vector3);
+struct Health(f32);
+
+// System processes all entities with specific components
+fn movement_system(positions: &mut [Position], velocities: &[Velocity], dt: f32) {
+    for (pos, vel) in positions.iter_mut().zip(velocities.iter()) {
+        pos.0 += vel.0 * dt;
+    }
+}
+```
+
+### Structure of Arrays vs Array of Structures
+
+#### Array of Structures (AoS):
+```rust
+struct Particle {
+    x: f32, y: f32, z: f32,  // Position
+    dx: f32, dy: f32, dz: f32, // Velocity
+}
+
+let particles: Vec<Particle> = vec![/* ... */];
+// Memory layout: [x,y,z,dx,dy,dz][x,y,z,dx,dy,dz][x,y,z,dx,dy,dz]...
+```
+
+#### Structure of Arrays (SoA):
+```rust
+struct ParticleSystem {
+    positions_x: Vec<f32>,
+    positions_y: Vec<f32>,
+    positions_z: Vec<f32>,
+    velocities_x: Vec<f32>,
+    velocities_y: Vec<f32>,
+    velocities_z: Vec<f32>,
+}
+// Memory layout: [x,x,x,x...][y,y,y,y...][z,z,z,z...][dx,dx,dx...]
+```
+
+### SIMD and Vectorization
+
+#### What is SIMD?
+- **Single Instruction, Multiple Data**
+- **Vector processing**: Apply same operation to multiple data points
+- **Hardware support**: Modern CPUs have SIMD instruction sets (SSE, AVX)
+- **Parallelism**: Process 4, 8, or 16 values simultaneously
+
+#### When SIMD Helps:
+- **Homogeneous data**: Same operations on similar data types
+- **Mathematical operations**: Vector math, transformations
+- **Data parallel algorithms**: Sorting, searching, filtering
+- **Regular access patterns**: Sequential or strided memory access
+
+### Spatial Data Structures
+
+For games and simulations, spatial organization is crucial:
+
+#### Common Structures:
+- **Octree/Quadtree**: Hierarchical space partitioning
+- **Grid/Hash grid**: Regular space subdivision
+- **BSP trees**: Binary space partitioning
+- **R-trees**: Rectangle trees for arbitrary shapes
+
+#### Trade-offs:
+- **Memory usage** vs **query speed**
+- **Update cost** vs **query cost**
+- **Static** vs **dynamic** scenarios
+
+### Rust's Advantages for Data-Oriented Programming
+
+#### Memory Safety:
+- **No garbage collection**: Predictable memory usage
+- **Zero-cost abstractions**: High-level code compiles to efficient machine code
+- **Ownership system**: Clear data ownership and lifetimes
+
+#### Performance Features:
+- **SIMD support**: Standard library and external crates
+- **Memory layout control**: `#[repr(C)]`, `#[repr(packed)]`
+- **Efficient iterators**: Zero-cost iterator chains
+- **Inline assembly**: Direct hardware access when needed
+
+### When to Use Data-Oriented Programming
+
+#### Good for:
+- **Performance-critical systems**
+- **Data processing pipelines**
+- **Game engines and simulations**
+- **Scientific computing**
+- **Real-time systems**
+
+#### Consider alternatives for:
+- **Complex business logic**
+- **User interfaces**
+- **I/O heavy applications**
+- **Prototype development**
+
+### Space Simulation Applications
+
+In our space simulation, data-oriented programming excels at:
+- **Physics updates**: Process thousands of entities efficiently
+- **Collision detection**: Spatial queries on large datasets
+- **Rendering**: Batch similar objects for GPU efficiency
+- **AI processing**: Decision making for multiple agents
+- **Resource management**: Track resources across many containers
+
 ## Key Concepts
 
 ### 1. Entity-Component-System (ECS) Architecture

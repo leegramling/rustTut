@@ -9,6 +9,156 @@
 - Create type-safe message protocols for different entity types
 - Implement publish-subscribe patterns for event distribution
 
+## Lesson: Message Passing in Rust
+
+### What is Message Passing?
+
+Message passing is a communication paradigm where components interact by sending messages rather than sharing memory. This approach:
+- **Eliminates data races** by avoiding shared mutable state
+- **Provides clear communication boundaries** between components
+- **Enables distributed systems** where components run on different machines
+- **Simplifies reasoning** about concurrent behavior
+
+### The Actor Model
+
+The actor model is a conceptual model for concurrent computation where:
+- **Actors** are independent computational units
+- **Messages** are the only way actors communicate
+- **Mailboxes** queue incoming messages for processing
+- **Behavior** defines how actors respond to messages
+
+#### Core Actor Principles:
+1. **Isolation**: Actors don't share state
+2. **Asynchronous**: Message sending doesn't block
+3. **Location transparency**: Actors can be local or remote
+4. **Fault tolerance**: Actor failures don't crash the system
+
+### Rust's Message Passing Advantages
+
+#### Type Safety:
+- **Compile-time verification** of message types
+- **Pattern matching** for exhaustive message handling
+- **Enum variants** for type-safe message protocols
+
+#### Performance:
+- **Zero-copy messaging** where possible
+- **Efficient channels** with minimal overhead
+- **Lock-free algorithms** in channel implementations
+
+#### Safety:
+- **No data races** due to ownership transfer
+- **Memory safety** without garbage collection
+- **Structured concurrency** with clear lifetimes
+
+### Channel Types in Rust
+
+#### MPSC (Multi-Producer, Single-Consumer):
+```rust
+use std::sync::mpsc;
+let (sender, receiver) = mpsc::channel();
+// Multiple senders, one receiver
+```
+
+#### Tokio Channels:
+```rust
+use tokio::sync::mpsc;
+let (sender, mut receiver) = mpsc::channel(100); // Bounded
+// Async-friendly channels
+```
+
+#### Oneshot Channels:
+```rust
+use tokio::sync::oneshot;
+let (sender, receiver) = oneshot::channel();
+// Single message, request-response pattern
+```
+
+### Message Passing Patterns
+
+#### 1. Fire-and-Forget:
+- Send message without waiting for response
+- Suitable for notifications and events
+
+#### 2. Request-Response:
+- Send message and wait for reply
+- Uses oneshot channels for responses
+
+#### 3. Publish-Subscribe:
+- One sender, multiple receivers
+- Broadcast channels or topic-based routing
+
+#### 4. Pipeline:
+- Chain of processing stages
+- Each stage transforms and forwards messages
+
+### Advanced Message Passing Concepts
+
+#### Backpressure:
+- **Problem**: Fast producers overwhelm slow consumers
+- **Solution**: Bounded channels that block when full
+- **Alternative**: Drop messages or apply flow control
+
+#### Message Ordering:
+- **FIFO**: First-in, first-out within single channel
+- **Priority**: Some messages processed before others
+- **Causal**: Maintain causal relationships between messages
+
+#### Reliability:
+- **At-most-once**: Message delivered zero or one time
+- **At-least-once**: Message delivered one or more times
+- **Exactly-once**: Message delivered exactly one time (expensive)
+
+#### Flow Control:
+- **Buffering**: Queue messages temporarily
+- **Rate limiting**: Control message send rate
+- **Credit-based**: Receiver grants permission to send
+
+### Error Handling in Message Passing
+
+#### Channel Errors:
+- **Send errors**: Receiver dropped, channel full
+- **Receive errors**: All senders dropped
+- **Timeout errors**: Operation didn't complete in time
+
+#### Message Errors:
+- **Serialization**: Failed to encode/decode messages
+- **Network**: Messages lost or corrupted in transit
+- **Processing**: Actor failed to handle message
+
+### Performance Considerations
+
+#### Message Size:
+- **Small messages**: Low latency, high throughput
+- **Large messages**: Consider reference passing
+- **Batching**: Group small messages together
+
+#### Channel Capacity:
+- **Unbounded**: Risk of memory exhaustion
+- **Bounded**: Risk of blocking or dropping
+- **Adaptive**: Adjust capacity based on load
+
+### Space Simulation Applications
+
+Message passing is ideal for:
+- **Entity communication**: Ships talking to stations
+- **Event systems**: Broadcast simulation events
+- **Network protocols**: Client-server communication
+- **AI systems**: Behavior trees and decision making
+- **Resource management**: Coordinate resource allocation
+
+### When to Use Message Passing
+
+#### Good for:
+- **Distributed systems**
+- **Clear component boundaries**
+- **Event-driven architectures**
+- **Fault-tolerant systems**
+
+#### Consider alternatives for:
+- **High-frequency, low-latency communication**
+- **Shared read-only data**
+- **Simple sequential processing**
+
 ## Key Concepts
 
 ### 1. Actor Model Fundamentals

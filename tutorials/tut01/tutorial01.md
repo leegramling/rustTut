@@ -6,6 +6,49 @@
 - Apply patterns to space simulation components
 - Practice ownership, borrowing, and lifetimes through patterns
 
+## Lesson: Design Patterns in Rust
+
+### What are Design Patterns?
+
+Design patterns are reusable solutions to common problems in software design. They represent best practices and provide a common vocabulary for developers. In Rust, design patterns take on unique characteristics due to the language's ownership system, type safety, and zero-cost abstractions.
+
+### Why Design Patterns Matter in Rust
+
+1. **Ownership Clarity**: Patterns help establish clear ownership semantics
+2. **Memory Safety**: Patterns ensure safe memory management without garbage collection
+3. **Performance**: Zero-cost abstractions mean patterns don't sacrifice runtime performance
+4. **Composability**: Rust's trait system enables flexible pattern composition
+5. **Error Handling**: Patterns integrate naturally with Rust's Result and Option types
+
+### Rust-Specific Pattern Considerations
+
+#### Ownership and Borrowing
+Unlike other languages, Rust patterns must respect ownership rules:
+- **Move semantics** are default (no copy unless explicitly implemented)
+- **Borrowing** allows temporary access without ownership transfer
+- **Lifetimes** ensure references remain valid
+
+#### Type System Integration
+Rust's powerful type system enables:
+- **Compile-time verification** of pattern correctness
+- **Zero-cost abstractions** through monomorphization
+- **Trait-based composition** instead of inheritance
+
+#### Error Handling
+Patterns integrate with Rust's error handling:
+- **Result<T, E>** for recoverable errors
+- **Option<T>** for optional values
+- **?** operator for error propagation
+
+### Core Patterns We'll Explore
+
+1. **Builder Pattern**: Construct complex objects step-by-step
+2. **Factory Pattern**: Create objects without specifying exact classes
+3. **Observer Pattern**: Define one-to-many dependency relationships
+4. **Strategy Pattern**: Define family of algorithms and make them interchangeable
+
+Each pattern leverages Rust's unique features to provide safe, efficient, and expressive solutions.
+
 ## Key Concepts
 
 ### 1. Builder Pattern

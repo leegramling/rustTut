@@ -8,6 +8,88 @@
 - Implement resource processing pipelines using functional approaches
 - Explore advanced patterns: fold, scan, filter_map, and custom iterators
 
+## Lesson: Functional Programming in Rust
+
+### What is Functional Programming?
+
+Functional programming is a paradigm that treats computation as the evaluation of mathematical functions. It emphasizes:
+- **Immutability**: Data doesn't change after creation
+- **Pure functions**: Functions with no side effects
+- **Higher-order functions**: Functions that take or return other functions
+- **Composition**: Building complex behavior from simple functions
+
+### Rust's Approach to Functional Programming
+
+Rust is a multi-paradigm language that embraces functional programming concepts while maintaining systems programming performance:
+
+#### Zero-Cost Abstractions
+- **Iterator chains** compile to efficient loops
+- **Closures** are optimized away when possible
+- **Monomorphization** creates specialized code for each use
+
+#### Ownership Integration
+- **Move semantics** work naturally with functional patterns
+- **Borrowing** allows efficient data access without copying
+- **Lifetimes** ensure memory safety in functional compositions
+
+### Core Functional Concepts in Rust
+
+#### 1. Immutability by Default
+```rust
+let data = vec![1, 2, 3];  // Immutable by default
+let mut mutable_data = vec![1, 2, 3];  // Explicitly mutable
+```
+
+#### 2. Closures
+Rust closures can capture their environment in three ways:
+- **By reference**: `Fn` - can be called multiple times
+- **By mutable reference**: `FnMut` - can modify captured values
+- **By value**: `FnOnce` - takes ownership, called once
+
+#### 3. Iterator Pattern
+Rust's iterators are:
+- **Lazy**: Only computed when consumed
+- **Zero-cost**: Compile to equivalent imperative code
+- **Composable**: Chain operations together
+
+#### 4. Monadic Patterns
+- **Option<T>**: Represents optional values
+- **Result<T, E>**: Represents success or failure
+- **?** operator: Monadic bind for error propagation
+
+### Why Functional Programming Matters
+
+#### Benefits:
+1. **Correctness**: Immutability reduces bugs
+2. **Composability**: Small functions combine into complex behavior
+3. **Testability**: Pure functions are easy to test
+4. **Parallelization**: Immutable data is thread-safe
+5. **Performance**: Rust's zero-cost abstractions maintain speed
+
+#### When to Use:
+- **Data transformation pipelines**
+- **Event processing systems**
+- **Mathematical computations**
+- **Resource processing chains**
+- **Error handling workflows**
+
+### Functional Patterns We'll Explore
+
+1. **Map/Filter/Reduce**: Transform and aggregate data
+2. **Monadic Composition**: Chain operations that might fail
+3. **Lazy Evaluation**: Defer computation until needed
+4. **Pipeline Architecture**: Build processing chains
+5. **Error Handling**: Functional error propagation
+
+### Space Simulation Applications
+
+In our space simulation, functional programming excels at:
+- **Resource Processing**: Transform raw materials through refinement pipelines
+- **Data Analysis**: Process sensor data and telemetry
+- **Event Handling**: React to simulation events functionally
+- **Configuration**: Immutable configuration with transformations
+- **Validation**: Chain validation rules together
+
 ## Key Concepts
 
 ### 1. Closures and Higher-Order Functions
