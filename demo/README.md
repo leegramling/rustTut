@@ -40,20 +40,48 @@ The simulation tracks:
 - Rust (2021 edition)
 - Python 3.7+
 - Cargo package manager
+- Optional: `curses` support for dashboard mode (usually built-in on Linux/macOS)
 
 ### Quick Start
 
-1. **Run with Python client (recommended):**
+1. **Dashboard Mode (recommended) - Non-scrolling real-time display:**
    ```bash
    cd demo
+   ./run_tui.sh
+   # OR
+   python3 client_curses.py
+   ```
+
+2. **Scrolling Mode - Traditional console output:**
+   ```bash
+   cd demo
+   ./run_demo.sh
+   # OR
    python3 client.py
    ```
 
-2. **Run Rust simulator directly:**
+3. **Rust simulator only:**
    ```bash
    cd demo
    cargo run
    ```
+
+### Display Modes
+
+#### 🖥️ Dashboard Mode (`client_curses.py`)
+- **Real-time dashboard** with fixed layout
+- **Color-coded status** indicators
+- **Live updates** without scrolling text
+- **Interactive controls** (press 'q' to quit)
+- **Mission statistics** panel
+- **Event history** with financial tracking
+
+#### 📜 Scrolling Mode (`client.py`)
+- **Traditional console** output
+- **Detailed logging** of all events
+- **Complete simulation** transcript
+- **Final summary** with comprehensive analysis
+- **Easier to review** mission history
 
 ## Features Demonstrated
 
