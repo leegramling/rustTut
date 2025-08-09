@@ -68,8 +68,12 @@ pub struct CurrentSimData {
 
 #[derive(Resource)]
 pub struct Stations {
-    pub mining_station: Vec3,
-    pub trade_hub: Vec3,
+    pub mining_station: Vec3,      // Mining Station Alpha
+    pub trade_hub: Vec3,           // Trade Hub Beta  
+    pub research_outpost: Vec3,    // Research Outpost Gamma
+    pub industrial_complex: Vec3,  // Industrial Complex Delta
+    pub mining_outpost: Vec3,      // Mining Outpost Epsilon
+    pub space_station: Vec3,       // Space Station Zeta
 }
 
 fn main() {
@@ -84,8 +88,12 @@ fn main() {
         }))
         .insert_resource(CurrentSimData { data: None })
         .insert_resource(Stations {
-            mining_station: Vec3::new(250.0, 150.0, 0.0), // Mining Station Alpha position
-            trade_hub: Vec3::new(-200.0, 200.0, 0.0),     // Trade Hub Beta position
+            mining_station: Vec3::new(250.0, 150.0, 0.0),       // Mining Station Alpha
+            trade_hub: Vec3::new(-200.0, 200.0, 0.0),           // Trade Hub Beta
+            research_outpost: Vec3::new(300.0, -120.0, 0.0),    // Research Outpost Gamma
+            industrial_complex: Vec3::new(-240.0, -100.0, 0.0), // Industrial Complex Delta
+            mining_outpost: Vec3::new(160.0, 240.0, 0.0),       // Mining Outpost Epsilon
+            space_station: Vec3::new(-80.0, 360.0, 0.0),        // Space Station Zeta
         })
         .add_systems(Startup, (setup_camera, setup_scene, start_simulation))
         .add_systems(Update, update_from_simulation)
@@ -168,6 +176,70 @@ fn setup_scene(
         },
         Planet {
             name: "Trade Hub Beta".to_string(),
+        },
+    ));
+    
+    // Research Outpost Gamma
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::srgb(0.6, 0.2, 0.8), // Purple for research
+                custom_size: Some(Vec2::new(40.0, 40.0)),
+                ..default()
+            },
+            transform: Transform::from_xyz(stations.research_outpost.x, stations.research_outpost.y, 0.5),
+            ..default()
+        },
+        Planet {
+            name: "Research Outpost Gamma".to_string(),
+        },
+    ));
+    
+    // Industrial Complex Delta
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::srgb(0.7, 0.7, 0.2), // Yellow for industrial
+                custom_size: Some(Vec2::new(40.0, 40.0)),
+                ..default()
+            },
+            transform: Transform::from_xyz(stations.industrial_complex.x, stations.industrial_complex.y, 0.5),
+            ..default()
+        },
+        Planet {
+            name: "Industrial Complex Delta".to_string(),
+        },
+    ));
+    
+    // Mining Outpost Epsilon
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::srgb(0.9, 0.3, 0.1), // Red-orange for outer mining
+                custom_size: Some(Vec2::new(40.0, 40.0)),
+                ..default()
+            },
+            transform: Transform::from_xyz(stations.mining_outpost.x, stations.mining_outpost.y, 0.5),
+            ..default()
+        },
+        Planet {
+            name: "Mining Outpost Epsilon".to_string(),
+        },
+    ));
+    
+    // Space Station Zeta
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::srgb(0.9, 0.9, 0.9), // Silver for luxury station
+                custom_size: Some(Vec2::new(40.0, 40.0)),
+                ..default()
+            },
+            transform: Transform::from_xyz(stations.space_station.x, stations.space_station.y, 0.5),
+            ..default()
+        },
+        Planet {
+            name: "Space Station Zeta".to_string(),
         },
     ));
     
@@ -447,27 +519,52 @@ fn cleanup_expired_effects(
 }
 
 fn map_sim_to_screen(sim_pos: &Position, stations: &Stations) -> Vec2 {
-    // Map simulation coordinates to screen space
-    // The simulation has specific coordinates for each location:
-    // Mining Station Alpha: (100, 50, 25) in "Asteroid Belt"
-    // Trade Hub Beta: (-75, 100, -30) in "Trade Sector"
-    // Home Base: (0, 0, 0) in "Home Base"
-    
+    // Map simulation coordinates to screen space based on sectors and known station positions
     match sim_pos.sector.as_str() {
         "Home Base" => Vec2::new(0.0, 0.0), // Center of screen
+        
         "Asteroid Belt" => {
-            // Mining Station Alpha area - map simulation coordinates to our station position
-            // But also account for the ship's exact position within the sector
+            // Mining Station Alpha: (100, 50, 25)
             let base_pos = stations.mining_station.truncate();
             let offset = Vec2::new((sim_pos.x - 100.0) as f32 * 2.0, (sim_pos.y - 50.0) as f32 * 2.0);
             base_pos + offset
         },
+        
         "Trade Sector" => {
-            // Trade Hub Beta area - map simulation coordinates to our station position
+            // Trade Hub Beta: (-75, 100, -30)
             let base_pos = stations.trade_hub.truncate();
             let offset = Vec2::new((sim_pos.x + 75.0) as f32 * 2.0, (sim_pos.y - 100.0) as f32 * 2.0);
             base_pos + offset
         },
+        
+        "Deep Space" => {
+            // Research Outpost Gamma: (150, -80, 60)
+            let base_pos = stations.research_outpost.truncate();
+            let offset = Vec2::new((sim_pos.x - 150.0) as f32 * 2.0, (sim_pos.y + 80.0) as f32 * 2.0);
+            base_pos + offset
+        },
+        
+        "Industrial Zone" => {
+            // Industrial Complex Delta: (-120, -50, 20)
+            let base_pos = stations.industrial_complex.truncate();
+            let offset = Vec2::new((sim_pos.x + 120.0) as f32 * 2.0, (sim_pos.y + 50.0) as f32 * 2.0);
+            base_pos + offset
+        },
+        
+        "Outer Asteroids" => {
+            // Mining Outpost Epsilon: (80, 120, -40)
+            let base_pos = stations.mining_outpost.truncate();
+            let offset = Vec2::new((sim_pos.x - 80.0) as f32 * 2.0, (sim_pos.y - 120.0) as f32 * 2.0);
+            base_pos + offset
+        },
+        
+        "Central Hub" => {
+            // Space Station Zeta: (-40, 180, 80)
+            let base_pos = stations.space_station.truncate();
+            let offset = Vec2::new((sim_pos.x + 40.0) as f32 * 2.0, (sim_pos.y - 180.0) as f32 * 2.0);
+            base_pos + offset
+        },
+        
         _ => {
             // For any other sector or during travel, use scaled simulation coordinates
             let scale = 3.0; // Moderate scale to keep on screen

@@ -189,8 +189,143 @@ impl SpaceSimulator {
             },
         };
         
+        // Research Outpost Gamma
+        let mut research_buy = HashMap::new();
+        research_buy.insert("rare_earth".to_string(), 150.0);
+        research_buy.insert("electronics".to_string(), 180.0);
+        
+        let mut research_sell = HashMap::new();
+        research_sell.insert("fuel".to_string(), 1.5);
+        research_sell.insert("advanced_tech".to_string(), 800.0);
+        research_sell.insert("data_modules".to_string(), 400.0);
+        
+        let research_outpost = Port {
+            name: "Research Outpost Gamma".to_string(),
+            position: Position {
+                x: 150.0,
+                y: -80.0,
+                z: 60.0,
+                sector: "Deep Space".to_string(),
+            },
+            services: PortServices {
+                refuel: true,
+                repair: true,
+                crew_transfer: true,
+                cargo_handling: true,
+            },
+            market: Market {
+                buy_prices: research_buy,
+                sell_prices: research_sell,
+                demand: HashMap::new(),
+                supply: HashMap::new(),
+            },
+        };
+        
+        // Industrial Complex Delta
+        let mut industrial_buy = HashMap::new();
+        industrial_buy.insert("iron_ore".to_string(), 14.0);
+        industrial_buy.insert("copper_ore".to_string(), 20.0);
+        industrial_buy.insert("ship_parts".to_string(), 250.0);
+        
+        let mut industrial_sell = HashMap::new();
+        industrial_sell.insert("fuel".to_string(), 1.9);
+        industrial_sell.insert("manufactured_goods".to_string(), 350.0);
+        industrial_sell.insert("heavy_machinery".to_string(), 600.0);
+        
+        let industrial_complex = Port {
+            name: "Industrial Complex Delta".to_string(),
+            position: Position {
+                x: -120.0,
+                y: -50.0,
+                z: 20.0,
+                sector: "Industrial Zone".to_string(),
+            },
+            services: PortServices {
+                refuel: true,
+                repair: true,
+                crew_transfer: true,
+                cargo_handling: true,
+            },
+            market: Market {
+                buy_prices: industrial_buy,
+                sell_prices: industrial_sell,
+                demand: HashMap::new(),
+                supply: HashMap::new(),
+            },
+        };
+        
+        // Mining Outpost Epsilon (Asteroid field)
+        let mut outpost_market = HashMap::new();
+        outpost_market.insert("iron_ore".to_string(), 8.0);
+        outpost_market.insert("copper_ore".to_string(), 12.0);
+        outpost_market.insert("platinum".to_string(), 200.0);
+        
+        let mut outpost_sell = HashMap::new();
+        outpost_sell.insert("fuel".to_string(), 2.2);
+        outpost_sell.insert("food".to_string(), 6.0);
+        outpost_sell.insert("mining_drones".to_string(), 450.0);
+        
+        let mining_outpost = Port {
+            name: "Mining Outpost Epsilon".to_string(),
+            position: Position {
+                x: 80.0,
+                y: 120.0,
+                z: -40.0,
+                sector: "Outer Asteroids".to_string(),
+            },
+            services: PortServices {
+                refuel: true,
+                repair: true,
+                crew_transfer: true,
+                cargo_handling: true,
+            },
+            market: Market {
+                buy_prices: outpost_market,
+                sell_prices: outpost_sell,
+                demand: HashMap::new(),
+                supply: HashMap::new(),
+            },
+        };
+        
+        // Space Station Zeta (Luxury hub)
+        let mut luxury_buy = HashMap::new();
+        luxury_buy.insert("rare_earth".to_string(), 130.0);
+        luxury_buy.insert("advanced_tech".to_string(), 700.0);
+        luxury_buy.insert("data_modules".to_string(), 350.0);
+        
+        let mut luxury_sell = HashMap::new();
+        luxury_sell.insert("fuel".to_string(), 1.6);
+        luxury_sell.insert("luxury_goods".to_string(), 900.0);
+        luxury_sell.insert("exotic_materials".to_string(), 1200.0);
+        
+        let space_station = Port {
+            name: "Space Station Zeta".to_string(),
+            position: Position {
+                x: -40.0,
+                y: 180.0,
+                z: 80.0,
+                sector: "Central Hub".to_string(),
+            },
+            services: PortServices {
+                refuel: true,
+                repair: true,
+                crew_transfer: true,
+                cargo_handling: true,
+            },
+            market: Market {
+                buy_prices: luxury_buy,
+                sell_prices: luxury_sell,
+                demand: HashMap::new(),
+                supply: HashMap::new(),
+            },
+        };
+
         self.ports.insert("Mining Station Alpha".to_string(), mining_station);
         self.ports.insert("Trade Hub Beta".to_string(), trade_hub);
+        self.ports.insert("Research Outpost Gamma".to_string(), research_outpost);
+        self.ports.insert("Industrial Complex Delta".to_string(), industrial_complex);
+        self.ports.insert("Mining Outpost Epsilon".to_string(), mining_outpost);
+        self.ports.insert("Space Station Zeta".to_string(), space_station);
     }
     
     fn create_demo_ship(&mut self) {
@@ -198,6 +333,13 @@ impl SpaceSimulator {
         materials.insert("iron_ore".to_string(), 0.0);
         materials.insert("copper_ore".to_string(), 0.0);
         materials.insert("rare_earth".to_string(), 0.0);
+        materials.insert("platinum".to_string(), 0.0);
+        materials.insert("electronics".to_string(), 0.0);
+        materials.insert("advanced_tech".to_string(), 0.0);
+        materials.insert("data_modules".to_string(), 0.0);
+        materials.insert("manufactured_goods".to_string(), 0.0);
+        materials.insert("luxury_goods".to_string(), 0.0);
+        materials.insert("exotic_materials".to_string(), 0.0);
         
         let mut parts = HashMap::new();
         parts.insert("mining_equipment".to_string(), 2);
@@ -239,34 +381,77 @@ impl SpaceSimulator {
     }
     
     pub async fn run_simulation(&mut self) {
-        println!("🚀 Starting Space Resource Management Simulation");
-        println!("================================================");
+        println!("🚀 Starting Extended Space Resource Management Simulation");
+        println!("=======================================================");
         
-        // Mission plan: Travel to mining station, load materials, travel to trade hub, sell materials
         let ship_id = 1;
         
-        // Phase 1: Travel to Mining Station Alpha
-        self.travel_to_port(ship_id, "Mining Station Alpha").await;
+        // Continuous trading route through multiple stations
+        let trading_route = vec![
+            "Mining Station Alpha",
+            "Industrial Complex Delta", 
+            "Mining Outpost Epsilon",
+            "Research Outpost Gamma",
+            "Trade Hub Beta",
+            "Space Station Zeta",
+        ];
         
-        // Phase 2: Mine and load raw materials
-        self.dock_at_port(ship_id, "Mining Station Alpha").await;
-        self.load_materials(ship_id, "Mining Station Alpha").await;
-        self.refuel(ship_id, "Mining Station Alpha").await;
-        self.undock_from_port(ship_id, "Mining Station Alpha").await;
+        // Run multiple trading cycles
+        for cycle in 1..=3 {
+            println!("\n🔄 === TRADING CYCLE {} ===", cycle);
+            
+            for station in &trading_route {
+                // Travel to station
+                self.travel_to_port(ship_id, station).await;
+                
+                // Dock and conduct business
+                self.dock_at_port(ship_id, station).await;
+                
+                // Different activities based on station type
+                match station {
+                    &"Mining Station Alpha" | &"Mining Outpost Epsilon" => {
+                        self.load_materials(ship_id, station).await;
+                    }
+                    &"Industrial Complex Delta" => {
+                        self.sell_materials(ship_id, station).await;
+                        self.load_manufactured_goods(ship_id, station).await;
+                    }
+                    &"Research Outpost Gamma" => {
+                        self.sell_materials(ship_id, station).await;
+                        self.load_research_goods(ship_id, station).await;
+                    }
+                    &"Trade Hub Beta" => {
+                        self.sell_materials(ship_id, station).await;
+                        self.load_crew_and_parts(ship_id, station).await;
+                    }
+                    &"Space Station Zeta" => {
+                        self.sell_materials(ship_id, station).await;
+                        self.load_luxury_goods(ship_id, station).await;
+                    }
+                    _ => {
+                        self.sell_materials(ship_id, station).await;
+                    }
+                }
+                
+                // Always refuel
+                self.refuel(ship_id, station).await;
+                
+                self.undock_from_port(ship_id, station).await;
+                
+                // Brief pause between stations
+                sleep(Duration::from_millis(500)).await;
+            }
+            
+            // Return to home base at end of each cycle
+            self.travel_to_home(ship_id).await;
+            sleep(Duration::from_millis(1000)).await;
+            
+            println!("\n📊 Cycle {} Complete! Credits: {:.2}", 
+                    cycle, 
+                    self.ships.get(&ship_id).map(|s| s.credits).unwrap_or(0.0));
+        }
         
-        // Phase 3: Travel to Trade Hub Beta
-        self.travel_to_port(ship_id, "Trade Hub Beta").await;
-        
-        // Phase 4: Sell materials and resupply
-        self.dock_at_port(ship_id, "Trade Hub Beta").await;
-        self.sell_materials(ship_id, "Trade Hub Beta").await;
-        self.load_crew_and_parts(ship_id, "Trade Hub Beta").await;
-        self.undock_from_port(ship_id, "Trade Hub Beta").await;
-        
-        // Phase 5: Return home
-        self.travel_to_home(ship_id).await;
-        
-        println!("\n🎯 Mission Complete! Final Status:");
+        println!("\n🎯 Extended Mission Complete! Final Status:");
         self.print_ship_status(ship_id);
         self.print_mission_summary();
     }
@@ -513,6 +698,123 @@ impl SpaceSimulator {
         sleep(Duration::from_millis(1200)).await;
         self.current_time += 1.0;
         self.output_simulation_state();
+    }
+    
+    async fn load_manufactured_goods(&mut self, ship_id: u32, port_name: &str) {
+        if self.ships.get(&ship_id).is_none() || self.ports.get(port_name).is_none() {
+            return;
+        }
+        
+        if let Some(ship) = self.ships.get_mut(&ship_id) {
+            ship.status = ShipStatus::Loading;
+        }
+        
+        let goods_to_load = vec![
+            ("manufactured_goods", 100.0, 350.0),
+            ("heavy_machinery", 50.0, 600.0),
+        ];
+        
+        for (good, amount, unit_cost) in goods_to_load {
+            let cost = amount * unit_cost;
+            
+            if let Some(ship) = self.ships.get_mut(&ship_id) {
+                if ship.credits >= cost {
+                    ship.credits -= cost;
+                    ship.cargo.materials.insert(good.to_string(), amount);
+                    ship.cargo.used += amount;
+                    
+                    self.log_event(ship_id, EventType::LoadCargo,
+                                  &format!("Acquired {} units of {} for {} credits", amount, good, cost),
+                                  serde_json::json!({"material": good, "amount": amount, "cost": cost}));
+                }
+            }
+            
+            sleep(Duration::from_millis(1000)).await;
+            self.current_time += 0.8;
+            self.output_simulation_state();
+        }
+        
+        if let Some(ship) = self.ships.get_mut(&ship_id) {
+            ship.status = ShipStatus::Docked { port: port_name.to_string() };
+        }
+    }
+    
+    async fn load_research_goods(&mut self, ship_id: u32, port_name: &str) {
+        if self.ships.get(&ship_id).is_none() || self.ports.get(port_name).is_none() {
+            return;
+        }
+        
+        if let Some(ship) = self.ships.get_mut(&ship_id) {
+            ship.status = ShipStatus::Loading;
+        }
+        
+        let goods_to_load = vec![
+            ("advanced_tech", 30.0, 800.0),
+            ("data_modules", 60.0, 400.0),
+        ];
+        
+        for (good, amount, unit_cost) in goods_to_load {
+            let cost = amount * unit_cost;
+            
+            if let Some(ship) = self.ships.get_mut(&ship_id) {
+                if ship.credits >= cost {
+                    ship.credits -= cost;
+                    ship.cargo.materials.insert(good.to_string(), amount);
+                    ship.cargo.used += amount;
+                    
+                    self.log_event(ship_id, EventType::LoadCargo,
+                                  &format!("Acquired {} units of {} for {} credits", amount, good, cost),
+                                  serde_json::json!({"material": good, "amount": amount, "cost": cost}));
+                }
+            }
+            
+            sleep(Duration::from_millis(1200)).await;
+            self.current_time += 0.9;
+            self.output_simulation_state();
+        }
+        
+        if let Some(ship) = self.ships.get_mut(&ship_id) {
+            ship.status = ShipStatus::Docked { port: port_name.to_string() };
+        }
+    }
+    
+    async fn load_luxury_goods(&mut self, ship_id: u32, port_name: &str) {
+        if self.ships.get(&ship_id).is_none() || self.ports.get(port_name).is_none() {
+            return;
+        }
+        
+        if let Some(ship) = self.ships.get_mut(&ship_id) {
+            ship.status = ShipStatus::Loading;
+        }
+        
+        let goods_to_load = vec![
+            ("luxury_goods", 20.0, 900.0),
+            ("exotic_materials", 15.0, 1200.0),
+        ];
+        
+        for (good, amount, unit_cost) in goods_to_load {
+            let cost = amount * unit_cost;
+            
+            if let Some(ship) = self.ships.get_mut(&ship_id) {
+                if ship.credits >= cost {
+                    ship.credits -= cost;
+                    ship.cargo.materials.insert(good.to_string(), amount);
+                    ship.cargo.used += amount;
+                    
+                    self.log_event(ship_id, EventType::LoadCargo,
+                                  &format!("Acquired {} units of {} for {} credits", amount, good, cost),
+                                  serde_json::json!({"material": good, "amount": amount, "cost": cost}));
+                }
+            }
+            
+            sleep(Duration::from_millis(1500)).await;
+            self.current_time += 1.2;
+            self.output_simulation_state();
+        }
+        
+        if let Some(ship) = self.ships.get_mut(&ship_id) {
+            ship.status = ShipStatus::Docked { port: port_name.to_string() };
+        }
     }
     
     async fn undock_from_port(&mut self, ship_id: u32, port_name: &str) {
